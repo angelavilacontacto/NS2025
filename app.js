@@ -220,17 +220,67 @@ async function cargarInventario() {
 // ========================================
 // MÓDULO DE CLIENTES
 // ========================================
+
+// Formatear nombre: Primera letra de cada palabra en mayúscula
+function formatearNombre(nombre) {
+  return nombre.toLowerCase().split(' ').map(palabra => {
+    return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+  }).join(' ');
+}
+
+// Formatear teléfono: +504 XXXX-XXXX
+function formatearTelefono(input) {
+  // Quitar todo excepto números
+  let numeros = input.value.replace(/\D/g, '');
+  
+  // Limitar a 8 dígitos
+  if (numeros.length > 8) {
+    numeros = numeros.slice(0, 8);
+  }
+  
+  // Formatear: +504 XXXX-XXXX
+  let formatted = '+504 ';
+  if (numeros.length > 0) {
+    formatted += numeros.slice(0, 4);
+  }
+  if (numeros.length > 4) {
+    formatted += '-' + numeros.slice(4, 8);
+  }
+  
+  input.value = formatted;
+}
+
+// Validar correo
+function validarCorreo(correo) {
+  return correo.includes('@');
+}
+
 async function guardarCliente() {
   console.log('=== INICIANDO GUARDADO DE CLIENTE ===');
   
-  const nombre = document.getElementById('nombreCliente').value;
-  const telefono = document.getElementById('telefonoCliente').value;
-  const correo = document.getElementById('correoCliente').value;
+  let nombre = document.getElementById('nombreCliente').value.trim();
+  let telefono = document.getElementById('telefonoCliente').value.trim();
+  let correo = document.getElementById('correoCliente').value.trim();
   
-  console.log('Datos capturados:', { nombre, telefono, correo });
-  
+  // Validar nombre
   if (!nombre) {
     alert('Por favor ingresa el nombre del cliente');
+    return;
+  }
+  
+  // Formatear nombre
+  nombre = formatearNombre(nombre);
+  
+  // Validar teléfono (debe tener 8 dígitos después de +504)
+  const numerosEnTelefono = telefono.replace(/\D/g, '');
+  if (telefono && numerosEnTelefono.length !== 8) {
+    alert('El teléfono debe tener 8 dígitos');
+    return;
+  }
+  
+  // Validar correo
+  if (correo && !validarCorreo(correo)) {
+    alert('El correo debe contener @');
     return;
   }
   
@@ -248,7 +298,7 @@ async function guardarCliente() {
 
 function limpiarFormularioClientes() {
   document.getElementById('nombreCliente').value = '';
-  document.getElementById('telefonoCliente').value = '';
+  document.getElementById('telefonoCliente').value = '+504 ';
   document.getElementById('correoCliente').value = '';
 }
 
@@ -319,4 +369,21 @@ async function cargarGastos() {
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Sistema POS cargado correctamente');
+  
+  // Configurar campo de teléfono
+  const telefonoInput = document.getElementById('telefonoCliente');
+  if (telefonoInput) {
+    telefonoInput.value = '+504 ';
+    telefonoInput.addEventListener('input', function() {
+      formatearTelefono(this);
+    });
+    
+    // Evitar que se borre el +504
+    telefonoInput.addEventListener('keydown', function(e) {
+      if (this.value.length <= 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
+        e.preventDefault();
+        this.value = '+504 ';
+      }
+    });
+  }
 });
