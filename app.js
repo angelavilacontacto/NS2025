@@ -83,18 +83,24 @@ async function escribirHoja(nombreHoja, valores) {
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
+      redirect: 'follow',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
     });
     
-    console.log('Response enviado');
+    console.log('Response status:', response.status);
+    const result = await response.json();
+    console.log('Resultado:', result);
     
-    alert('✅ Datos enviados. Recarga en 2 segundos para ver los cambios.');
+    if (result.error) {
+      alert('Error del servidor: ' + result.error);
+      return null;
+    }
     
-    return { success: true };
+    alert('✅ Datos guardados correctamente');
+    return result;
     
   } catch (error) {
     console.error('ERROR al escribir:', error);
@@ -127,7 +133,7 @@ async function guardarVenta() {
   
   if (resultado) {
     limpiarFormularioVentas();
-    setTimeout(() => cargarVentas(), 2000);
+    setTimeout(() => cargarVentas(), 1000);
   }
 }
 
@@ -178,7 +184,7 @@ async function guardarProducto() {
   
   if (resultado) {
     limpiarFormularioInventario();
-    setTimeout(() => cargarInventario(), 2000);
+    setTimeout(() => cargarInventario(), 1000);
   }
 }
 
@@ -235,7 +241,7 @@ async function guardarCliente() {
   
   if (resultado) {
     limpiarFormularioClientes();
-    setTimeout(() => cargarClientes(), 2000);
+    setTimeout(() => cargarClientes(), 1000);
   }
 }
 
@@ -281,7 +287,7 @@ async function guardarGasto() {
   
   if (resultado) {
     limpiarFormularioGastos();
-    setTimeout(() => cargarGastos(), 2000);
+    setTimeout(() => cargarGastos(), 1000);
   }
 }
 
