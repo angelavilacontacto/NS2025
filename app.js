@@ -255,44 +255,16 @@ function formatearTelefono(valor) {
   }
 }
 
-// Event listener para nombre (capitalizar en tiempo real)
-document.addEventListener('DOMContentLoaded', () => {
-  const nombreInput = document.getElementById('nombreCliente');
-  if (nombreInput) {
-    nombreInput.addEventListener('input', function(e) {
-      const cursorPos = this.selectionStart;
-      const valorAnterior = this.value;
-      this.value = capitalizarNombre(this.value);
-      
-      // Mantener cursor en posición correcta
-      if (valorAnterior.length === this.value.length) {
-        this.setSelectionRange(cursorPos, cursorPos);
-      }
-    });
-  }
-  
-  // Event listener para teléfono (formato automático)
-  const telefonoInput = document.getElementById('telefonoCliente');
-  if (telefonoInput) {
-    telefonoInput.addEventListener('input', function(e) {
-      this.value = formatearTelefono(this.value);
-    });
-    
-    // Agregar +504 al hacer foco
-    telefonoInput.addEventListener('focus', function(e) {
-      if (this.value === '') {
-        this.value = '+504 ';
-      }
-    });
-  }
-});
-
 async function guardarCliente() {
   console.log('=== INICIANDO GUARDADO DE CLIENTE ===');
   
-  const nombre = document.getElementById('nombreCliente').value;
-  const telefono = document.getElementById('telefonoCliente').value;
-  const correo = document.getElementById('correoCliente').value;
+  const nombreInput = document.getElementById('nombreCliente');
+  const telefonoInput = document.getElementById('telefonoCliente');
+  const correoInput = document.getElementById('correoCliente');
+  
+  const nombre = nombreInput.value.trim();
+  let telefono = telefonoInput.value.trim();
+  const correo = correoInput.value.trim();
   
   console.log('Datos capturados:', { nombre, telefono, correo });
   
@@ -307,16 +279,79 @@ async function guardarCliente() {
     return;
   }
   
-  const valores = [nombre, telefono, correo];
+  // Limpiar teléfono para Excel (quitar +504 y dejar solo números con guión)
+  let telefonoLimpio = '';
+  if (telefono && telefono !== '+504 ' && telefono !== '+504') {
+    // Extraer solo los números
+    let numeros = telefono.replace(/\D/g, '');
+    
+    // Si empieza con 504, quitarlo
+    if (numeros.startsWith('504') && numeros.length > 3) {
+      numeros = numeros.slice(3);
+    }
+    
+    if (numeros.length > 0) {
+      // Formato sin +504: 3369-2861
+      if (numeros.length <= 4) {
+        telefonoLimpio = numeros;
+      } else {
+        telefonoLimpio = numeros.slice(0, 4) + '-' + numeros.slice(4);
+      }
+    }
+  }
+  
+  const valores = [nombre, telefonoLimpio, correo];
   console.log('Valores a enviar:', valores);
   
   const resultado = await escribirHoja('Clientes', valores);
-  console.log('Resultado:', resultado);
+  console.log('Resultado escribir:', resultado);
   
   if (resultado) {
-    limpiarFormularioClientes();
-    setTimeout(() => cargarClientes(), 1000);
+    // Limpiar campos directamente
+    nombreInput.value = '';
+    telefonoInput.value = '';
+    correoInput.value = '';
+    
+    console.log('Campos limpiados');
+    
+    // Recargar lista después de un breve delay
+    setTimeout(() => {
+      console.log('Recargando clientes...');
+      cargarClientes();
+    }, 1000);
   }
+}
+
+async function cargarClientes() {
+  console.log('=== CARGANDO CLIENTES ===');
+  const datos = await leerHoja('Clientes');
+  console.log('Datos clientes recibidos:', datos);
+  
+  const tbody = document.querySelector('#tablaClientes tbody');
+  if (!tbody) {
+    console.error('No se encontró la tabla de clientes');
+    return;
+  }
+  
+  tbody.innerHTML = '';
+  
+  if (!datos || datos.length === 0) {
+    console.log('No hay clientes para mostrar');
+    return;
+  }
+  
+  datos.forEach((fila, index) => {
+    console.log(`Cliente ${index}:`, fila);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${fila[0] || '-'}</td>
+      <td>${fila[1] || '-'}</td>
+      <td>${fila[2] || '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  console.log('Total clientes cargados:', datos.length);
 }
 
 // ========================================
@@ -370,4 +405,54 @@ async function cargarGastos() {
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Sistema POS cargado correctamente');
+  
+  // Configurar formateo de nombre
+  const nombreInput = document.getElementById('nombreCliente');
+  if (nombreInput) {
+    nombreInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const valorAnterior = this.value;
+      this.value = capitalizarNombre(this.value);
+      
+      if (valorAnterior.length === this.value.length) {
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+  }
+  
+  // Configurar formateo de teléfono
+  const telefonoInput = document.getElementById('telefonoCliente');
+  if (telefonoInput) {
+    // Al hacer focus, agregar +504
+    telefonoInput.addEventListener('focus', function(e) {
+      if (this.value === '') {
+        this.value = '+504 ';
+      }
+    });
+    
+    // Al escribir, formatear
+    telefonoInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const longitudAntes = this.value.length;
+      
+      this.value = formatearTelefono(this.value);
+      
+      const longitudDespues = this.value.length;
+      
+      // Ajustar cursor si se agregó el guión automáticamente
+      if (longitudDespues > longitudAntes) {
+        this.setSelectionRange(cursorPos + 1, cursorPos + 1);
+      } else {
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+    
+    // Prevenir borrar +504
+    telefonoInput.addEventListener('keydown', function(e) {
+      if ((e.key === 'Backspace' || e.key === 'Delete') && this.value.length <= 5) {
+        e.preventDefault();
+        this.value = '+504 ';
+      }
+    });
+  }
 });
