@@ -85,22 +85,23 @@ async function escribirHoja(nombreHoja, valores) {
       method: 'POST',
       redirect: 'follow',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/plain;charset=utf-8'
       },
       body: JSON.stringify(payload)
     });
     
     console.log('Response status:', response.status);
-    const result = await response.json();
-    console.log('Resultado:', result);
+    const result = await response.text();
+    const data = JSON.parse(result);
+    console.log('Resultado:', data);
     
-    if (result.error) {
-      alert('Error del servidor: ' + result.error);
+    if (data.error) {
+      alert('Error del servidor: ' + data.error);
       return null;
     }
     
     alert('✅ Datos guardados correctamente');
-    return result;
+    return data;
     
   } catch (error) {
     console.error('ERROR al escribir:', error);
