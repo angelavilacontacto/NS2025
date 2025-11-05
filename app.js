@@ -230,22 +230,15 @@ function capitalizarNombre(nombre) {
     .join(' ');
 }
 
-// Función para formatear teléfono +504 3369-2861
+// Función para formatear teléfono +504 XXXX-XXXX
 function formatearTelefono(valor) {
-  // Extraer solo los números
   let numeros = valor.replace(/\D/g, '');
-  
-  // Si empieza con 504, quitarlo (es el prefijo que ya tenemos)
   if (numeros.startsWith('504')) {
     numeros = numeros.slice(3);
   }
-  
-  // Limitar a 8 dígitos
   if (numeros.length > 8) {
     numeros = numeros.slice(0, 8);
   }
-  
-  // Formatear: +504 XXXX-XXXX
   if (numeros.length === 0) {
     return '+504 ';
   } else if (numeros.length <= 4) {
@@ -273,25 +266,18 @@ async function guardarCliente() {
     return;
   }
   
-  // Validar que el correo tenga @
   if (correo && !correo.includes('@')) {
     alert('El correo debe contener @ para ser válido');
     return;
   }
   
-  // Limpiar teléfono para Excel (quitar +504 y dejar solo números con guión)
   let telefonoLimpio = '';
   if (telefono && telefono !== '+504 ' && telefono !== '+504') {
-    // Extraer solo los números
     let numeros = telefono.replace(/\D/g, '');
-    
-    // Si empieza con 504, quitarlo
     if (numeros.startsWith('504') && numeros.length > 3) {
       numeros = numeros.slice(3);
     }
-    
     if (numeros.length > 0) {
-      // Formato sin +504: 3369-2861
       if (numeros.length <= 4) {
         telefonoLimpio = numeros;
       } else {
@@ -307,14 +293,10 @@ async function guardarCliente() {
   console.log('Resultado escribir:', resultado);
   
   if (resultado) {
-    // Limpiar campos directamente
     nombreInput.value = '';
     telefonoInput.value = '';
     correoInput.value = '';
-    
     console.log('Campos limpiados');
-    
-    // Recargar lista después de un breve delay
     setTimeout(() => {
       console.log('Recargando clientes...');
       cargarClientes();
@@ -334,7 +316,6 @@ async function cargarClientes() {
   }
   
   tbody.innerHTML = '';
-  
   if (!datos || datos.length === 0) {
     console.log('No hay clientes para mostrar');
     return;
@@ -342,15 +323,18 @@ async function cargarClientes() {
   
   datos.forEach((fila, index) => {
     console.log(`Cliente ${index}:`, fila);
+    let telefonoMostrar = fila[1] || '-';
+    if (telefonoMostrar !== '-' && !telefonoMostrar.startsWith('+504')) {
+      telefonoMostrar = '+504 ' + telefonoMostrar;
+    }
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${fila[0] || '-'}</td>
-      <td>${fila[1] || '-'}</td>
+      <td>${telefonoMostrar}</td>
       <td>${fila[2] || '-'}</td>
     `;
     tbody.appendChild(tr);
   });
-  
   console.log('Total clientes cargados:', datos.length);
 }
 
@@ -406,48 +390,46 @@ async function cargarGastos() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Sistema POS cargado correctamente');
   
-  // Configurar formateo de nombre
   const nombreInput = document.getElementById('nombreCliente');
   if (nombreInput) {
     nombreInput.addEventListener('input', function(e) {
       const cursorPos = this.selectionStart;
       const valorAnterior = this.value;
       this.value = capitalizarNombre(this.value);
-      
       if (valorAnterior.length === this.value.length) {
         this.setSelectionRange(cursorPos, cursorPos);
       }
     });
   }
-  
-  // Configurar formateo de teléfono
+
+  // CORREO SIEMPRE EN MINÚSCULA
+  const correoInput = document.getElementById('correoCliente');
+  if (correoInput) {
+    correoInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      this.value = this.value.toLowerCase();
+      this.setSelectionRange(cursorPos, cursorPos);
+    });
+  }
+
   const telefonoInput = document.getElementById('telefonoCliente');
   if (telefonoInput) {
-    // Al hacer focus, agregar +504
     telefonoInput.addEventListener('focus', function(e) {
       if (this.value === '') {
         this.value = '+504 ';
       }
     });
-    
-    // Al escribir, formatear
     telefonoInput.addEventListener('input', function(e) {
       const cursorPos = this.selectionStart;
       const longitudAntes = this.value.length;
-      
       this.value = formatearTelefono(this.value);
-      
       const longitudDespues = this.value.length;
-      
-      // Ajustar cursor si se agregó el guión automáticamente
       if (longitudDespues > longitudAntes) {
         this.setSelectionRange(cursorPos + 1, cursorPos + 1);
       } else {
         this.setSelectionRange(cursorPos, cursorPos);
       }
     });
-    
-    // Prevenir borrar +504
     telefonoInput.addEventListener('keydown', function(e) {
       if ((e.key === 'Backspace' || e.key === 'Delete') && this.value.length <= 5) {
         e.preventDefault();
