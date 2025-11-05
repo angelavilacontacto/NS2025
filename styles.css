@@ -113,6 +113,16 @@ h3 {
   box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
+/* Centrar el título solo en la página principal */
+#page-home header {
+  justify-content: center;
+}
+
+#page-home h1 {
+  text-align: center;
+  width: 100%;
+}
+
 /* Main content */
 main {
   background: white;
