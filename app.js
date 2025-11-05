@@ -83,23 +83,19 @@ async function escribirHoja(nombreHoja, valores) {
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
-      redirect: 'follow',
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
     });
     
-    console.log('Response status:', response.status);
-    const result = await response.json();
-    console.log('Resultado:', result);
+    console.log('Response enviado');
     
-    if (result.error) {
-      alert('Error del servidor: ' + result.error);
-      return null;
-    }
+    alert('✅ Datos enviados. Recarga en 2 segundos para ver los cambios.');
     
-    return result;
+    return { success: true };
+    
   } catch (error) {
     console.error('ERROR al escribir:', error);
     alert('Error al guardar los datos: ' + error.message);
@@ -130,9 +126,8 @@ async function guardarVenta() {
   const resultado = await escribirHoja('Ventas', valores);
   
   if (resultado) {
-    alert('✅ Venta registrada exitosamente');
     limpiarFormularioVentas();
-    setTimeout(() => cargarVentas(), 1000);
+    setTimeout(() => cargarVentas(), 2000);
   }
 }
 
@@ -182,9 +177,8 @@ async function guardarProducto() {
   const resultado = await escribirHoja('Inventario', valores);
   
   if (resultado) {
-    alert('✅ Producto agregado exitosamente');
     limpiarFormularioInventario();
-    setTimeout(() => cargarInventario(), 1000);
+    setTimeout(() => cargarInventario(), 2000);
   }
 }
 
@@ -240,10 +234,8 @@ async function guardarCliente() {
   console.log('Resultado:', resultado);
   
   if (resultado) {
-    alert('✅ Cliente guardado. Recarga la página para ver los cambios.');
     limpiarFormularioClientes();
-  } else {
-    alert('❌ Error al guardar el cliente');
+    setTimeout(() => cargarClientes(), 2000);
   }
 }
 
@@ -288,9 +280,8 @@ async function guardarGasto() {
   const resultado = await escribirHoja('Gastos', valores);
   
   if (resultado) {
-    alert('✅ Gasto registrado exitosamente');
     limpiarFormularioGastos();
-    setTimeout(() => cargarGastos(), 1000);
+    setTimeout(() => cargarGastos(), 2000);
   }
 }
 
