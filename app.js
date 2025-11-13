@@ -433,20 +433,204 @@ async function cargarVentas() {
 }
 
 // ========================================
+// FORMATEO DE PRECIOS EN TIEMPO REAL
+// ========================================
+
+// Función para formatear precio mientras se escribe
+function formatearPrecioInput(valor) {
+  // Remover todo excepto números y punto
+  let limpio = valor.replace(/[^\d.]/g, '');
+  
+  // Permitir solo un punto decimal
+  const partes = limpio.split('.');
+  if (partes.length > 2) {
+    limpio = partes[0] + '.' + partes.slice(1).join('');
+  }
+  
+  // Limitar a 2 decimales
+  if (partes.length === 2 && partes[1].length > 2) {
+    limpio = partes[0] + '.' + partes[1].slice(0, 2);
+  }
+  
+  // Si está vacío, retornar vacío
+  if (limpio === '' || limpio === '.') {
+    return '';
+  }
+  
+  // Separar parte entera y decimal
+  const [entero, decimal] = limpio.split('.');
+  
+  // Formatear parte entera con comas
+  const enteroFormateado = parseInt(entero || '0').toLocaleString('es-HN');
+  
+  // Si hay punto decimal, agregarlo
+  if (limpio.includes('.')) {
+    return 'L ' + enteroFormateado + '.' + (decimal || '');
+  }
+  
+  return 'L ' + enteroFormateado;
+}
+
+// Función para obtener valor numérico desde input formateado
+function obtenerValorNumerico(valorFormateado) {
+  if (!valorFormateado) return '';
+  
+  // Remover "L " y comas
+  const limpio = valorFormateado.replace(/L\s?/g, '').replace(/,/g, '');
+  
+  // Si termina en punto, agregar 00
+  if (limpio.endsWith('.')) {
+    return limpio + '00';
+  }
+  
+  // Si tiene un decimal, agregar un 0
+  const partes = limpio.split('.');
+  if (partes.length === 2 && partes[1].length === 1) {
+    return limpio + '0';
+  }
+  
+  // Si no tiene decimales, agregar .00
+  if (!limpio.includes('.') && limpio !== '') {
+    return limpio + '.00';
+  }
+  
+  return limpio;
+}
+
+// Configurar inputs de precios
+function configurarInputsPrecios() {
+  const precioCompraInput = document.getElementById('precioCompra');
+  const precioVentaInput = document.getElementById('precioVenta');
+  
+  // Configurar Precio de Compra
+  if (precioCompraInput) {
+    // Al hacer focus, si está vacío mostrar L 0
+    precioCompraInput.addEventListener('focus', function() {
+      if (this.value === '' || this.value === 'L 0') {
+        this.value = 'L ';
+      }
+    });
+    
+    // Al escribir, formatear
+    precioCompraInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const valorAnterior = this.value;
+      const longitudAnterior = valorAnterior.length;
+      
+      // Guardar el valor sin formato para procesarlo
+      const valorSinFormato = this.value.replace(/L\s?/g, '').replace(/,/g, '');
+      this.value = formatearPrecioInput(valorSinFormato);
+      
+      // Ajustar cursor
+      const longitudNueva = this.value.length;
+      const diferencia = longitudNueva - longitudAnterior;
+      
+      if (diferencia > 0) {
+        this.setSelectionRange(cursorPos + diferencia, cursorPos + diferencia);
+      } else {
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+    
+    // Al perder el focus, asegurar formato completo
+    precioCompraInput.addEventListener('blur', function() {
+      if (this.value === 'L ' || this.value === '') {
+        this.value = '';
+        return;
+      }
+      
+      const valorNumerico = obtenerValorNumerico(this.value);
+      if (valorNumerico && valorNumerico !== '0.00') {
+        this.value = 'L ' + parseFloat(valorNumerico).toLocaleString('es-HN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+    });
+    
+    // Prevenir borrar "L "
+    precioCompraInput.addEventListener('keydown', function(e) {
+      if ((e.key === 'Backspace' || e.key === 'Delete') && 
+          (this.value === 'L ' || this.value === 'L')) {
+        e.preventDefault();
+      }
+    });
+  }
+  
+  // Configurar Precio de Venta (misma lógica)
+  if (precioVentaInput) {
+    precioVentaInput.addEventListener('focus', function() {
+      if (this.value === '' || this.value === 'L 0') {
+        this.value = 'L ';
+      }
+    });
+    
+    precioVentaInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const valorAnterior = this.value;
+      const longitudAnterior = valorAnterior.length;
+      
+      const valorSinFormato = this.value.replace(/L\s?/g, '').replace(/,/g, '');
+      this.value = formatearPrecioInput(valorSinFormato);
+      
+      const longitudNueva = this.value.length;
+      const diferencia = longitudNueva - longitudAnterior;
+      
+      if (diferencia > 0) {
+        this.setSelectionRange(cursorPos + diferencia, cursorPos + diferencia);
+      } else {
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+    
+    precioVentaInput.addEventListener('blur', function() {
+      if (this.value === 'L ' || this.value === '') {
+        this.value = '';
+        return;
+      }
+      
+      const valorNumerico = obtenerValorNumerico(this.value);
+      if (valorNumerico && valorNumerico !== '0.00') {
+        this.value = 'L ' + parseFloat(valorNumerico).toLocaleString('es-HN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+    });
+    
+    precioVentaInput.addEventListener('keydown', function(e) {
+      if ((e.key === 'Backspace' || e.key === 'Delete') && 
+          (this.value === 'L ' || this.value === 'L')) {
+        e.preventDefault();
+      }
+    });
+  }
+}
+
+// ========================================
 // MÓDULO DE INVENTARIO
 // ========================================
 async function guardarProducto() {
   const nombre = document.getElementById('nombre').value;
   const marca = document.getElementById('marca').value;
   const modelo = document.getElementById('modelo').value;
-  const precioCompra = document.getElementById('precioCompra').value;
-  const precioVenta = document.getElementById('precioVenta').value;
+  const precioCompraInput = document.getElementById('precioCompra').value;
+  const precioVentaInput = document.getElementById('precioVenta').value;
   const stock = document.getElementById('stock').value;
   const proveedor = document.getElementById('proveedor').value;
   const imagenUrl = document.getElementById('imagenUrl').value;
   
-  if (!nombre || !precioVenta || !stock) {
+  if (!nombre || !precioVentaInput || !stock) {
     alert('Por favor completa los campos obligatorios: Nombre, Precio Venta y Stock');
+    return;
+  }
+  
+  // Limpiar precios para guardar
+  const precioCompra = obtenerValorNumerico(precioCompraInput) || '0.00';
+  const precioVenta = obtenerValorNumerico(precioVentaInput);
+  
+  if (!precioVenta || precioVenta === '0.00') {
+    alert('El precio de venta debe ser mayor a 0');
     return;
   }
   
@@ -623,8 +807,51 @@ function cerrarLightbox() {
 }
 
 // ========================================
-// MÓDULO DE CLIENTES
+// MÓDULO DE CLIENTES CON NÚMERO DE IDENTIDAD
 // ========================================
+
+// Función para formatear número de identidad hondureño
+function formatearIdentidadHonduras(valor) {
+  // Remover todo excepto números
+  let numeros = valor.replace(/\D/g, '');
+  
+  // Limitar a 13 dígitos
+  if (numeros.length > 13) {
+    numeros = numeros.slice(0, 13);
+  }
+  
+  // Formatear: 0000-0000-00000
+  if (numeros.length === 0) {
+    return '';
+  } else if (numeros.length <= 4) {
+    return numeros;
+  } else if (numeros.length <= 8) {
+    return numeros.slice(0, 4) + '-' + numeros.slice(4);
+  } else {
+    return numeros.slice(0, 4) + '-' + numeros.slice(4, 8) + '-' + numeros.slice(8);
+  }
+}
+
+// Función para limpiar identidad antes de guardar
+function limpiarIdentidadParaGuardar(identidad) {
+  if (!identidad || identidad.trim() === '') {
+    return '';
+  }
+  
+  let numeros = identidad.replace(/\D/g, '');
+  
+  if (numeros.length === 0) return '';
+  
+  // Formatear según longitud
+  if (numeros.length <= 4) {
+    return numeros;
+  } else if (numeros.length <= 8) {
+    return numeros.slice(0, 4) + '-' + numeros.slice(4);
+  } else {
+    return numeros.slice(0, 4) + '-' + numeros.slice(4, 8) + '-' + numeros.slice(8);
+  }
+}
+
 function capitalizarNombre(nombre) {
   return nombre
     .toLowerCase()
@@ -635,10 +862,12 @@ function capitalizarNombre(nombre) {
 
 async function guardarCliente() {
   const nombreInput = document.getElementById('nombreCliente');
+  const identidadInput = document.getElementById('identidadCliente');
   const telefonoInput = document.getElementById('telefonoCliente');
   const correoInput = document.getElementById('correoCliente');
   
   const nombre = nombreInput.value.trim();
+  const identidad = identidadInput.value.trim();
   const telefono = telefonoInput.value.trim();
   const correo = correoInput.value.trim();
   
@@ -647,18 +876,31 @@ async function guardarCliente() {
     return;
   }
   
+  if (!identidad) {
+    alert('Por favor ingresa el número de identidad');
+    return;
+  }
+  
+  // Validar que tenga 13 dígitos
+  const numerosIdentidad = identidad.replace(/\D/g, '');
+  if (numerosIdentidad.length !== 13) {
+    alert('El número de identidad debe tener 13 dígitos');
+    return;
+  }
+  
   if (correo && !correo.includes('@')) {
     alert('El correo debe contener @ para ser válido');
     return;
   }
   
+  const identidadLimpia = limpiarIdentidadParaGuardar(identidad);
   const telefonoLimpio = limpiarTelefonoParaGuardar(telefono);
-  const valores = [nombre, telefonoLimpio, correo];
+  const valores = [nombre, identidadLimpia, telefonoLimpio, correo];
   
   await guardarDatosGenericos(
     'Clientes',
     valores,
-    ['nombreCliente', 'telefonoCliente', 'correoCliente'],
+    ['nombreCliente', 'identidadCliente', 'telefonoCliente', 'correoCliente'],
     cargarClientes
   );
 }
@@ -668,15 +910,16 @@ async function cargarClientes() {
     'Clientes',
     '#tablaClientes tbody',
     (fila) => {
-      let telefonoMostrar = fila[1] || '-';
+      let telefonoMostrar = fila[2] || '-';
       if (telefonoMostrar !== '-' && !telefonoMostrar.startsWith('+504')) {
         telefonoMostrar = '+504 ' + telefonoMostrar;
       }
       
       return `
         <td>${fila[0] || '-'}</td>
+        <td>${fila[1] || '-'}</td>
         <td>${telefonoMostrar}</td>
-        <td>${fila[2] || '-'}</td>
+        <td>${fila[3] || '-'}</td>
       `;
     }
   );
@@ -726,6 +969,9 @@ async function cargarGastos() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Sistema POS cargado correctamente');
   
+  // Configurar inputs de precios (NUEVO)
+  configurarInputsPrecios();
+  
   // Configurar inputs de clientes
   const nombreInput = document.getElementById('nombreCliente');
   if (nombreInput) {
@@ -734,6 +980,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const valorAnterior = this.value;
       this.value = capitalizarNombre(this.value);
       if (valorAnterior.length === this.value.length) {
+        this.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
+  }
+
+  const identidadInput = document.getElementById('identidadCliente');
+  if (identidadInput) {
+    identidadInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const longitudAntes = this.value.length;
+      this.value = formatearIdentidadHonduras(this.value);
+      const longitudDespues = this.value.length;
+      
+      if (longitudDespues > longitudAntes) {
+        this.setSelectionRange(cursorPos + 1, cursorPos + 1);
+      } else {
         this.setSelectionRange(cursorPos, cursorPos);
       }
     });
@@ -777,6 +1039,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Cerrar modal al hacer clic fuera de él
+window.onclick = function(event) {
+  const modal = document.getElementById('modalImagenes');
+  if (event.target === modal) {
+    cerrarModal();
+  }
+}
 
 // Cerrar modal al hacer clic fuera de él
 window.onclick = function(event) {
