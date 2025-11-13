@@ -185,12 +185,16 @@
           
           <div class="form-group">
             <label>Precio Compra (L):</label>
-            <input id="precioCompra" type="number" step="0.01" placeholder="0.00">
+            <input id="precioCompra" type="text" placeholder="L 0.00" inputmode="decimal">
+            <small style="color: #666; font-size: 0.85em; display: block; margin-top: 5px;">
+            </small>
           </div>
-          
+
           <div class="form-group">
-            <label>Precio Venta (L):</label>
-            <input id="precioVenta" type="number" step="0.01" placeholder="0.00">
+            <label>Precio Venta (L): *</label>
+            <input id="precioVenta" type="text" placeholder="L 0.00" inputmode="decimal">
+            <small style="color: #666; font-size: 0.85em; display: block; margin-top: 5px;">
+            </small>
           </div>
           
           <div class="form-group">
@@ -254,7 +258,7 @@
       </main>
     </div>
 
-    <!-- PÁGINA DE CLIENTES -->
+    <!-- PÁGINA DE CLIENTES CON NÚMERO DE IDENTIDAD -->
     <div id="page-clientes" class="page">
       <header>
         <h1>👥 Clientes y Proveedores</h1>
@@ -265,18 +269,27 @@
         <h2>Agregar Cliente</h2>
         
         <div class="form-group">
-          <input id="nombreCliente" type="text" placeholder="Nombre">
+          <label>Nombre Completo:</label>
+          <input id="nombreCliente" type="text" placeholder="Ej: Cleotilde Caceres">
         </div>
         
         <div class="form-group">
-          <input id="telefonoCliente" type="text" placeholder="Teléfono">
+          <label>Número de Identidad:</label>
+          <input id="identidadCliente" type="text" placeholder="0000-0000-00000" maxlength="15">
+          <small style="color: #666; font-size: 0.85em; display: block; margin-top: 5px;">Formato: 0801-1990-12345 (13 dígitos)</small>
         </div>
         
         <div class="form-group">
-          <input id="correoCliente" type="email" placeholder="Correo">
+          <label>Teléfono:</label>
+          <input id="telefonoCliente" type="text" placeholder="+504 0000-0000">
         </div>
         
-        <button onclick="guardarCliente()" class="btn-primary">💾 Guardar</button>
+        <div class="form-group">
+          <label>Correo Electrónico:</label>
+          <input id="correoCliente" type="email" placeholder="cliente@ejemplo.com">
+        </div>
+        
+        <button onclick="guardarCliente()" class="btn-primary">💾 Guardar Cliente</button>
         
         <h3>Lista de Clientes</h3>
         <div class="table-container">
@@ -284,6 +297,7 @@
             <thead>
               <tr>
                 <th>Nombre</th>
+                <th>Identidad</th>
                 <th>Teléfono</th>
                 <th>Correo</th>
               </tr>
@@ -361,11 +375,7 @@
     <img id="lightboxImg" src="" alt="Imagen en grande">
   </div>
 
-  <script src="app.js"></script>
-</body>
-
-
-<!-- FOOTER ÚNICO AL FINAL -->
+  <!-- FOOTER ÚNICO AL FINAL -->
   <footer>
     © 2025 NoryAng Servicios. Todos los derechos reservados.<br>
     Sistema de Gestión Comercial desarrollado por AracGroupHN.
