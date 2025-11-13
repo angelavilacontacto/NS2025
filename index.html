@@ -87,7 +87,7 @@
       </main>
     </div>
 
-    <!-- PÁGINA DE INVENTARIO -->
+    <!-- PÁGINA DE INVENTARIO - MENÚ PRINCIPAL -->
     <div id="page-inventario" class="page">
       <header>
         <h1>📦 Inventario</h1>
@@ -95,52 +95,163 @@
       </header>
       
       <main>
-        <h2>Agregar Producto</h2>
+        <h2>Gestión de Inventario</h2>
         
-        <div class="form-group">
-          <input id="nombre" type="text" placeholder="Nombre del producto">
+        <div class="inventario-menu">
+          <button onclick="mostrarInventarioCompleto()" class="inventario-menu-btn">
+            <span class="icon">📋</span>
+            <span class="text">Inventario Completo</span>
+            <span class="desc">Ver todos los productos</span>
+          </button>
+          
+          <button onclick="mostrarAgregarProducto()" class="inventario-menu-btn">
+            <span class="icon">➕</span>
+            <span class="text">Agregar Producto</span>
+            <span class="desc">Registrar nuevo producto</span>
+          </button>
+          
+          <button onclick="mostrarReportes()" class="inventario-menu-btn">
+            <span class="icon">📊</span>
+            <span class="text">Reportes</span>
+            <span class="desc">Estadísticas y análisis</span>
+          </button>
         </div>
         
-        <div class="form-group">
-          <input id="marca" type="text" placeholder="Marca">
+        <!-- SECCIÓN: INVENTARIO COMPLETO -->
+        <div id="seccion-inventario-completo" class="inventario-seccion" style="display: none;">
+          <div class="seccion-header">
+            <h3>📋 Inventario Completo</h3>
+            <button onclick="volverMenuInventario()" class="btn-secondary">⬅ Volver al Menú</button>
+          </div>
+          
+          <!-- BUSCADOR -->
+          <div class="buscador-container">
+            <input 
+              type="text" 
+              id="buscadorInventario" 
+              placeholder="🔍 Buscar por nombre, marca, modelo o proveedor..." 
+              onkeyup="buscarEnInventario()"
+            >
+          </div>
+          
+          <div class="table-container">
+            <table id="tablaInventarioCompleto">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nombre</th>
+                  <th>Marca</th>
+                  <th>Modelo</th>
+                  <th>Stock</th>
+                  <th>Precio Venta</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
         
-        <div class="form-group">
-          <input id="modelo" type="text" placeholder="Modelo">
+        <!-- SECCIÓN: AGREGAR PRODUCTO -->
+        <div id="seccion-agregar-producto" class="inventario-seccion" style="display: none;">
+          <div class="seccion-header">
+            <h3>➕ Agregar Nuevo Producto</h3>
+            <button onclick="volverMenuInventario()" class="btn-secondary">⬅ Volver al Menú</button>
+          </div>
+          
+          <div class="form-group">
+            <label>Imagen del Producto:</label>
+            <div class="image-selector">
+              <input id="imagenUrl" type="text" placeholder="URL de la imagen" readonly>
+              <button onclick="abrirSelectorImagenes()" class="btn-secondary">📷 Seleccionar</button>
+            </div>
+            <div id="previewContainer" class="preview-container" style="display: none;">
+              <img id="imagenPreview" alt="Vista previa">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Nombre del Producto:</label>
+            <input id="nombre" type="text" placeholder="Ej: Samsung Galaxy A14">
+          </div>
+          
+          <div class="form-group">
+            <label>Marca:</label>
+            <input id="marca" type="text" placeholder="Ej: Samsung">
+          </div>
+          
+          <div class="form-group">
+            <label>Modelo:</label>
+            <input id="modelo" type="text" placeholder="Ej: A14">
+          </div>
+          
+          <div class="form-group">
+            <label>Precio Compra (L):</label>
+            <input id="precioCompra" type="number" step="0.01" placeholder="0.00">
+          </div>
+          
+          <div class="form-group">
+            <label>Precio Venta (L):</label>
+            <input id="precioVenta" type="number" step="0.01" placeholder="0.00">
+          </div>
+          
+          <div class="form-group">
+            <label>Stock Inicial:</label>
+            <input id="stock" type="number" placeholder="0">
+          </div>
+          
+          <div class="form-group">
+            <label>Proveedor:</label>
+            <input id="proveedor" type="text" placeholder="Nombre del proveedor">
+          </div>
+          
+          <button onclick="guardarProducto()" class="btn-primary">💾 Guardar Producto</button>
         </div>
         
-        <div class="form-group">
-          <input id="precioCompra" type="number" placeholder="Precio Compra">
-        </div>
-        
-        <div class="form-group">
-          <input id="precioVenta" type="number" placeholder="Precio Venta">
-        </div>
-        
-        <div class="form-group">
-          <input id="stock" type="number" placeholder="Stock">
-        </div>
-        
-        <div class="form-group">
-          <input id="proveedor" type="text" placeholder="Proveedor">
-        </div>
-        
-        <button onclick="guardarProducto()" class="btn-primary">💾 Guardar</button>
-        
-        <h3>Inventario actual</h3>
-        <div class="table-container">
-          <table id="tablaInventario">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Stock</th>
-                <th>Venta</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <!-- SECCIÓN: REPORTES -->
+        <div id="seccion-reportes" class="inventario-seccion" style="display: none;">
+          <div class="seccion-header">
+            <h3>📊 Reportes y Estadísticas</h3>
+            <button onclick="volverMenuInventario()" class="btn-secondary">⬅ Volver al Menú</button>
+          </div>
+          
+          <div class="reportes-grid">
+            <div class="reporte-card">
+              <h4>📦 Total Productos</h4>
+              <p class="reporte-valor" id="totalProductos">0</p>
+            </div>
+            
+            <div class="reporte-card">
+              <h4>💰 Valor Total Inventario</h4>
+              <p class="reporte-valor" id="valorInventario">L 0.00</p>
+            </div>
+            
+            <div class="reporte-card">
+              <h4>⚠️ Stock Bajo</h4>
+              <p class="reporte-valor" id="stockBajo">0</p>
+              <small>Productos con menos de 5 unidades</small>
+            </div>
+            
+            <div class="reporte-card">
+              <h4>📸 Con Fotos</h4>
+              <p class="reporte-valor" id="conFotos">0</p>
+            </div>
+          </div>
+          
+          <h4 style="margin-top: 30px;">⚠️ Productos con Stock Bajo</h4>
+          <div class="table-container">
+            <table id="tablaStockBajo">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Marca</th>
+                  <th>Stock Actual</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
@@ -228,6 +339,28 @@
         </div>
       </main>
     </div>
+  </div>
+
+  <!-- MODAL DE SELECCIÓN DE IMÁGENES -->
+  <div id="modalImagenes" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📷 Seleccionar Imagen de Google Drive</h2>
+        <button class="close-modal" onclick="cerrarModal()">&times;</button>
+      </div>
+      
+      <div id="imagenesContainer">
+        <div class="loading">Cargando imágenes...</div>
+      </div>
+      
+      <button onclick="confirmarSeleccion()" class="btn-primary" style="margin-top: 20px;">✓ Confirmar Selección</button>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX PARA VER IMÁGENES EN GRANDE -->
+  <div id="imageLightbox" class="image-lightbox" onclick="cerrarLightbox()">
+    <span class="image-lightbox-close">&times;</span>
+    <img id="lightboxImg" src="" alt="Imagen en grande">
   </div>
 
   <script src="app.js"></script>
